@@ -66,9 +66,7 @@ print(Data.info())
 print('Plotting the trips by the hours in a day')
 plt.figure(figsize=(12,5))
 # creating bar plot to show the count of rides by hours of day
-sns.countplot(x='Hour',data=Data,palette='rocket_r',saturation=1)
-
-
+sns.countplot(x='Hour',data=Data,palette='mako',saturation=1)
 # removing the frame around graph
 sns.despine(bottom=True, left=True)
 # removing x and y label
@@ -79,8 +77,8 @@ print(plt.show())
 
 print('Plotting data by trips during every day of the month')
 plt.figure(figsize=(10,8))
-plt.hist(Data['Nday'], bins=31, rwidth=0.8) # bins is the number of equal width in the graphs
-plt.xlabel('Date of the month')
-plt.ylabel('Total Journeys')
-plt.title('Journey by month day')
+plt.hist(Data['Nday'], bins=31,color='b', edgecolor='red', rwidth=0.8) # bins is the number of equal width in the graphs
+plt.xlabel('Day')
+plt.ylabel('Sum of Numbers of Trips')
+plt.title('Journey by days in month')
 print(plt.show())
