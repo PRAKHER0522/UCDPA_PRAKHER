@@ -25,6 +25,7 @@ import os
 from sklearn.cluster import DBSCAN
 from geopy.distance import great_circle
 from shapely.geometry import MultiPoint
+import re
 
 # we have dataset of six months of year 2014
 # april, may, june, july, august and september
@@ -61,14 +62,17 @@ print("Drop duplicates in dataframe using keep =False")
 print(Data.drop_duplicates(keep = False).shape)
 print("Drop missing values in dataframe column")
 print(Data.dropna(subset = ['Date/Time', 'Lat', 'Lon', 'Base'], how = 'any').shape)
+
 # checking datatype
 print(Data.dtypes)
 # Since Data/Time column is having data type as object so we are now changing its format to datatime
 print('After converting datatype of data time')
 Data['Date/Time'] = pd.to_datetime(Data['Date/Time'], format='%m/%d/%Y %H:%M:%S')
+
+df.head()
 print(Data.dtypes)
 print('\n')
-# Now, we were going to add a new collumn to define weekday, day, minute, month, and hour
+# Now, we were going to add a new column to define weekday, day, minute, month, and hour
 # displaying all columns
 # pd.options.display.max_columns = None
 Data['Month'] = Data['Date/Time'].dt.month_name().str[:3]
@@ -76,8 +80,15 @@ Data['day'] = Data['Date/Time'].dt.day_name().str[:3]
 Data['Hour'] = Data['Date/Time'].dt.hour
 Data['Nday'] = Data['Date/Time'].dt.day
 Data['Date/Time'] = Data['Date/Time'].dt.date
-
+print("Using of reg exp")
+# replace the matching strings
+Data = Data.replace(to_replace='[S]ep', value='sep', regex=True)
+# Print the updated dataframe
+print(Data)
 print(Data.head)
+print("Convert dataframe column into list0")
+col_one_list = Data["Month"].values.tolist()
+print(col_one_list)
 # Replace missing values or drop duplicates
 # checking if there are null values or not
 print('Null values in each column :')
