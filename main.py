@@ -2,6 +2,7 @@
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from matplotlib import cm
 
 
 def print_hi(name):
@@ -21,6 +22,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+from sklearn.cluster import DBSCAN
+from geopy.distance import great_circle
+from shapely.geometry import MultiPoint
 
 # we have dataset of six months of year 2014
 # april, may, june, july, august and september
@@ -39,6 +43,24 @@ print(Data.shape)
 print(Data.head())
 # checking last 5 rows
 print(Data.tail())
+#Replace missing values or drop duplicates
+#checking for null values
+
+print("Number of NaN values in every column.")
+print(pd.isnull(Data).sum(axis = 0))
+print("Number of NaN values in every ROW.")
+print(pd.isnull(Data).sum(axis = 1))
+print("Since in data set no missing values is there, lets find out the duplicates and remove it from data set ")
+print("Sum of duplicates in dataframe")
+print(df.duplicated().sum())
+print("Drop duplicates in dataframe using keep =first")
+print(Data.drop_duplicates(keep = 'first').shape)
+print("Drop duplicates in dataframe using keep =last")
+print(Data.drop_duplicates(keep = 'last').shape)
+print("Drop duplicates in dataframe using keep =False")
+print(Data.drop_duplicates(keep = False).shape)
+print("Drop missing values in dataframe column")
+print(Data.dropna(subset = ['Date/Time', 'Lat', 'Lon', 'Base'], how = 'any').shape)
 # checking datatype
 print(Data.dtypes)
 # Since Data/Time column is having data type as object so we are now changing its format to datatime
@@ -54,7 +76,7 @@ Data['day'] = Data['Date/Time'].dt.day_name().str[:3]
 Data['Hour'] = Data['Date/Time'].dt.hour
 Data['Nday'] = Data['Date/Time'].dt.day
 Data['Date/Time'] = Data['Date/Time'].dt.date
-#Data['weekday'] = Data['Date/Time'].dt.day_name()
+
 print(Data.head)
 # Replace missing values or drop duplicates
 # checking if there are null values or not
@@ -62,6 +84,65 @@ print('Null values in each column :')
 print(Data.isnull().sum())
 print('\n')
 print(Data.info())
+
+
+#implement machine learning model(Unsupervised learning)
+
+def get_hot_spots(max_distance, min_cars, ride_data):
+    ## get coordinates from ride data
+    coords = ride_data[['Lat', 'Lon']].to_numpy()
+
+    ## calculate epsilon parameter using
+    kms_per_radian = 6371.0088
+    epsilon = max_distance / kms_per_radian
+
+    ## perform clustering
+    db = DBSCAN(eps=epsilon, min_samples=min_cars,
+                algorithm='ball_tree', metric='haversine').fit(np.radians(coords))
+
+    ## group the clusters
+    cluster_labels = db.labels_
+    num_clusters = len(set(cluster_labels))
+    clusters = pd.Series([coords[cluster_labels == n] for n in range(num_clusters)])
+
+    ## report
+    print('Number of clusters: {}'.format(num_clusters))
+
+    ## initialize lists for hot spots
+    lat = []
+    lon = []
+    num_members = []
+
+    ## loop through clusters and get centroids, number of members
+    for ii in range(len(clusters)):
+        ## filter empty clusters
+        if clusters[ii].any():
+            ## get centroid and magnitude of cluster
+            lat.append(MultiPoint(clusters[ii]).centroid.x)
+            lon.append(MultiPoint(clusters[ii]).centroid.y)
+            num_members.append(len(clusters[ii]))
+
+    hot_spots = [lon, lat, num_members]
+
+    return hot_spots
+
+
+#get ride_data
+ride_data=Data.loc[(Data['Nday']==21) & (Data['Hour'] >15)]
+max_distance =0.05
+min_pickups = 25
+hot_spots =  get_hot_spots(max_distance, min_pickups, ride_data)
+print(hot_spots)
+## make the figure
+fig = plt.figure(figsize=(14, 8))
+ax = fig.add_subplot(111)
+## set the color scale
+color_scale = np.log(hot_spots[2])
+# color_scale = hot_spots[2]
+## make the scatter plot
+plt.scatter(hot_spots[0], hot_spots[1], s=80, c=color_scale, cmap=cm.cool)
+print(plt.show())
+
 
 #Analysis of above data using visualization library
 
