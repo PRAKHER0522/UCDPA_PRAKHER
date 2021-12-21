@@ -45,6 +45,7 @@ print(Data.dtypes)
 print('After converting datatype of data time')
 Data['Date/Time'] = pd.to_datetime(Data['Date/Time'], format='%m/%d/%Y %H:%M:%S')
 print(Data.dtypes)
+print('\n')
 # Now, we were going to add a new collumn to define weekday, day, minute, month, and hour
 # displaying all columns
 # pd.options.display.max_columns = None
@@ -53,6 +54,7 @@ Data['day'] = Data['Date/Time'].dt.day_name().str[:3]
 Data['Hour'] = Data['Date/Time'].dt.hour
 Data['Nday'] = Data['Date/Time'].dt.day
 Data['Date/Time'] = Data['Date/Time'].dt.date
+#Data['weekday'] = Data['Date/Time'].dt.day_name()
 print(Data.head)
 # Replace missing values or drop duplicates
 # checking if there are null values or not
@@ -81,4 +83,25 @@ plt.hist(Data['Nday'], bins=31,color='b', edgecolor='red', rwidth=0.8) # bins is
 plt.xlabel('Day')
 plt.ylabel('Sum of Numbers of Trips')
 plt.title('Journey by days in month')
+print(plt.show())
+
+"""visualization by creating heatmap using seaborn and matplotlib by method of custom function"""
+def cust_heat(col1,col2,col3):
+    merge_col = Data.groupby([col1, col2]).apply(lambda x: len(x))
+    pivot = merge_col.unstack()
+    plt.figure(figsize=(10, 6))
+    plt.title(col3)
+    return sns.heatmap(pivot, annot=False)
+
+
+## validating above Analysis through Heatmap
+cust_heat('day','Month','Heatmap by Month and day ')
+plt.show()
+
+##Analysis of location data points
+
+plt.figure(figsize=(20,10))
+sns.scatterplot(data=Data,y='Lat',x='Lon',alpha=0.4)
+plt.xlim(-75,-72.5)
+plt.ylim(40.0,41.2)
 print(plt.show())
